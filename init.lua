@@ -30,7 +30,7 @@ vim.o.inccommand = 'split'
 vim.o.cursorline = true
 vim.o.scrolloff = 3
 vim.o.confirm = true
-vim.g.enable_custom_mappings = false
+vim.g.enable_custom_mappings = true
 
 ---------------------------------------------------------
 -- 键映射
@@ -52,6 +52,7 @@ map('n', '<leader>o', '<cmd>q<CR>', { desc = 'quit file' })
 map('n', 'P', '$p')
 
 map('n', '<Tab>', '<cmd>bnext<CR>', { desc = 'Next buffer' })
+map('n', '<leader>e', '<cmd>bdelete<CR>', { desc = 'close this buffer' })
 map('n', '<S-Tab>', '<cmd>bprevious<CR>', { desc = 'Previous buffer' })
 
 map('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left window' })
@@ -413,15 +414,20 @@ require('lazy').setup({
   {
     'echasnovski/mini.nvim',
     config = function()
+      require('mini.pairs').setup({ mappings = { ['`'] = false, }, })
+      require('mini.indentscope').setup()
+      require('mini.tabline').setup()
+      require('mini.sessions').setup({
+        directory = vim.fn.stdpath('data') .. '/sessions',
+        autoread = true,
+        autowrite = true,
+      })
       require('mini.ai').setup { n_lines = 500 }
-      require('mini.surround').setup()
       local statusline = require 'mini.statusline'
       statusline.setup { use_icons = vim.g.have_nerd_font }
-      ---@diagnostic disable-next-line: duplicate-set-field
       statusline.section_location = function()
         return '%2l:%-2v'
       end
-
       local mf = require('mini.files')
       mf.setup({
         windows = {
@@ -429,7 +435,6 @@ require('lazy').setup({
           width_focus = 30,
           width_preview = 30,
         }})
-
       vim.keymap.set('n', '<F2>', function()
         if not mf.close() then
           mf.open(vim.fn.getcwd())
@@ -440,7 +445,7 @@ require('lazy').setup({
   {
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
-    main = 'nvim-treesitter.configs',
+    main = 'nvim-treesitter.config',
     opts = {
       ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
       auto_install = true,
@@ -532,15 +537,6 @@ require('lazy').setup({
       configure()
       configure_exts()
       configure_debuggers()
-    end,
-  },
-  {
-    'windwp/nvim-autopairs',
-    event = 'InsertEnter',
-    config = function()
-      local autopairs = require('nvim-autopairs')
-      autopairs.setup {}
-      autopairs.remove_rule('`')
     end,
   },
   {
