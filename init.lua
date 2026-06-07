@@ -66,7 +66,23 @@ map('n', '<leader>o', '<cmd>q<CR>', { desc = 'Quit file' })
 
 map('n', '<Tab>', '<cmd>bnext<CR>', { desc = 'Next buffer' })
 map('n', '<S-Tab>', '<cmd>bprevious<CR>', { desc = 'Previous buffer' })
-map('n', '<leader>e', '<cmd>bdelete<CR>', { desc = 'Close this buffer' })
+
+local function close_buffer_keep_window()
+  local current_buf = vim.api.nvim_get_current_buf()
+  local listed_buffers = vim.tbl_filter(function(buf)
+    return vim.bo[buf].buflisted
+  end, vim.api.nvim_list_bufs())
+
+  if #listed_buffers > 1 then
+    vim.cmd.bprevious()
+  else
+    vim.cmd.enew()
+  end
+
+  vim.cmd.bdelete(current_buf)
+end
+
+map('n', '<leader>e', close_buffer_keep_window, { desc = 'Close this buffer and keep window' })
 
 map('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left window' })
 map('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
